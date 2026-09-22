@@ -1,0 +1,134 @@
+import sqlite3
+
+conn = sqlite3.connect("result.db")
+c = conn.cursor()
+
+c.execute("CREATE TABLE IF NOT EXISTS student (roll INTEGER PRIMARY KEY, name TEXT, sub1 INTEGER, sub2 INTEGER, sub3 INTEGER)")
+conn.commit()
+
+
+def add_student():
+    roll = int(input("Enter roll number: "))
+    name = input("Enter name: ")
+    sub1 = int(input("Enter marks of subject 1: "))
+    sub2 = int(input("Enter marks of subject 2: "))
+    sub3 = int(input("Enter marks of subject 3: "))
+
+    c.execute("INSERT INTO student VALUES (?,?,?,?,?)", (roll, name, sub1, sub2, sub3))
+    conn.commit()
+    print("Student added successfully")
+
+
+def view_students():
+    c.execute("SELECT * FROM student")
+    data = c.fetchall()
+
+    if len(data) == 0:
+        print("No records found")
+    else:
+        for i in data:
+            print("Roll:", i[0], " Name:", i[1], " Sub1:", i[2], " Sub2:", i[3], " Sub3:", i[4])
+
+
+def update_marks():
+    roll = int(input("Enter roll number to update: "))
+    c.execute("SELECT * FROM student WHERE roll=?", (roll,))
+    data = c.fetchone()
+
+    if data == None:
+        print("Student not found")
+    else:
+        sub1 = int(input("Enter new marks of subject 1: "))
+        sub2 = int(input("Enter new marks of subject 2: "))
+        sub3 = int(input("Enter new marks of subject 3: "))
+
+        c.execute("UPDATE student SET sub1=?, sub2=?, sub3=? WHERE roll=?", (sub1, sub2, sub3, roll))
+        conn.commit()
+        print("Marks updated")
+
+
+def delete_student():
+    roll = int(input("Enter roll number to delete: "))
+    c.execute("SELECT * FROM student WHERE roll=?", (roll,))
+    data = c.fetchone()
+
+    if data == None:
+        print("Student not found")
+    else:
+        c.execute("DELETE FROM student WHERE roll=?", (roll,))
+        conn.commit()
+        print("Student deleted")
+
+
+def calculate_result():
+    roll = int(input("Enter roll number: "))
+    c.execute("SELECT * FROM student WHERE roll=?", (roll,))
+    data = c.fetchone()
+
+    if data == None:
+        print("Student not found")
+        return
+
+    name = data[1]
+    sub1 = data[2]
+    sub2 = data[3]
+    sub3 = data[4]
+
+    total = sub1 + sub2 + sub3
+    percentage = total / 3
+
+    if sub1 < 33 or sub2 < 33 or sub3 < 33:
+        result = "FAIL"
+    else:
+        result = "PASS"
+
+    if percentage >= 90:
+        grade = "A+"
+    elif percentage >= 75:
+        grade = "A"
+    elif percentage >= 60:
+        grade = "B"
+    elif percentage >= 33:
+        grade = "C"
+    else:
+        grade = "F"
+
+    print("---------------------------")
+    print("Name:", name)
+    print("Roll No:", roll)
+    print("Total Marks:", total, "/ 300")
+    print("Percentage:", percentage)
+    print("Grade:", grade)
+    print("Result:", result)
+    print("---------------------------")
+
+
+# main menu
+while True:
+    print("\n----- STUDENT RESULT MANAGEMENT SYSTEM -----")
+    print("1. Add Student")
+    print("2. View All Students")
+    print("3. Update Marks")
+    print("4. Delete Student")
+    print("5. Calculate Result")
+    print("6. Exit")
+
+    ch = input("Enter your choice: ")
+
+    if ch == "1":
+        add_student()
+    elif ch == "2":
+        view_students()
+    elif ch == "3":
+        update_marks()
+    elif ch == "4":
+        delete_student()
+    elif ch == "5":
+        calculate_result()
+    elif ch == "6":
+        print("Thank you")
+        break
+    else:
+        print("Wrong choice, try again")
+
+conn.close()
